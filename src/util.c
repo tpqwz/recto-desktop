@@ -11,6 +11,9 @@
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
+#include <sys/stat.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #define recto_access _access
 #define recto_unlink _unlink
 #define recto_popen _popen
@@ -281,14 +284,40 @@ int dir_list(const char *path, char ***names, int *nout) {
     char **list = NULL;
     int n = 0, cap = 0;
 #ifdef _WIN32
-    /* Windows directory listing is filled in by the Win32 build.
-       This file still compiles there once FindFirstFile is wired;
-       the Linux desk is the tested path. */
-    (void)path;
-    recto_seterr("directory listing needs a POSIX host in this build");
-    *names = NULL;
-    *nout = 0;
-    return -1;
+    char pattern[RECTO_PATH];
+    WIN32_FIND_DATAA fd;
+    HANDLE h;
+    size_t len;
+    if (!path) {
+        recto_seterr("cannot list");
+        return -1;
+    }
+    len = strlen(path);
+    if (len + 3 >= sizeof pattern) {
+        recto_seterr("path too long");
+        return -1;
+    }
+    memcpy(pattern, path, len);
+    if (len == 0 || (pattern[len - 1] != '/' && pattern[len - 1] != '\\')) pattern[len++] = '\\';
+    pattern[len++] = '*';
+    pattern[len] = 0;
+    h = FindFirstFileA(pattern, &fd);
+    if (h == INVALID_HANDLE_VALUE) {
+        recto_seterr("cannot list %s", path);
+        return -1;
+    }
+    do {
+        if (fd.cFileName[0] == '.') continue;
+        if (n >= cap) {
+            cap = cap ? cap * 2 : 16;
+            list = xrealloc(list, (size_t)cap * sizeof *list);
+        }
+        list[n++] = xstrdup(fd.cFileName);
+    } while (FindNextFileA(h, &fd));
+    FindClose(h);
+    *names = list;
+    *nout = n;
+    return 0;
 #else
     DIR *d = opendir(path);
     struct dirent *de;

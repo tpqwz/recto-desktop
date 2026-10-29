@@ -14,7 +14,9 @@ The program is C99 and builds with Tiny C Compiler. With no arguments it prints 
 
 That runs `tcc` over `src/*.c` and the WebUI C sources, then links zlib, pthread, libm, and libdl. zlib is used for PNG, FlateDecode, and EPUB checksums. If zlib headers are missing, add `-DRECTO_NO_ZLIB`; compressed PDF streams, PNG, and the vision request body will not work.
 
-On Windows, `build.bat` produces `recto.exe`. The Windows build converts on the command line and has a line-mode desk. Directory import is implemented for POSIX.
+On Windows, `build.bat` produces `recto.exe`. The Windows build converts on the command line and has a line-mode desk. `recto gui` explains that the browser window is the Linux build.
+
+GitHub Actions builds every push to `master` and every pull request. It compiles Tiny C Compiler `e23dabed` (0.9.28rc, 2026-10-16), then runs `./build.sh` and `recto test` on Linux, and `build.bat` and `recto test` on Windows. The Windows artifact is the line-mode program.
 
 ## Convert
 

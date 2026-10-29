@@ -1,0 +1,106 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools and zlib
+        run: |
+          set -eu
+          sudo apt-get update
+          sudo apt-get install -y build-essential zlib1g-dev
+
+      - name: Build Tiny C Compiler
+        run: |
+          set -eu
+          git clone --depth 1 https://github.com/TinyCC/tinycc.git "$RUNNER_TEMP/tinycc"
+          git -C "$RUNNER_TEMP/tinycc" fetch --depth 1 origin e23dabed154a8495f3ac1ff3cc9d04fa1c207893
+          git -C "$RUNNER_TEMP/tinycc" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/tinycc" rev-parse HEAD)" = "e23dabed154a8495f3ac1ff3cc9d04fa1c207893"
+          cd "$RUNNER_TEMP/tinycc"
+          ./configure
+          make
+          sudo make install
+          tcc -v
+
+      - name: Build and test Recto
+        run: |
+          set -eu
+          ./build.sh
+          ./recto version
+          ./recto test
+
+      - name: Upload the Linux binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: recto-linux-x86_64
+          path: recto
+          if-no-files-found: error
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Tiny C Compiler
+        shell: bash
+        run: |
+          set -eu
+          git clone --depth 1 https://github.com/TinyCC/tinycc.git "$RUNNER_TEMP/tinycc"
+          git -C "$RUNNER_TEMP/tinycc" fetch --depth 1 origin e23dabed154a8495f3ac1ff3cc9d04fa1c207893
+          git -C "$RUNNER_TEMP/tinycc" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/tinycc" rev-parse HEAD)" = "e23dabed154a8495f3ac1ff3cc9d04fa1c207893"
+
+      - name: Build Tiny C Compiler
+        shell: cmd
+        run: |
+          for /f "delims=" %%i in ('vswhere.exe -latest -property installationPath') do call "%%i\VC\Auxiliary\Build\vcvarsall.bat" amd64
+          if errorlevel 1 exit /b 1
+          cd /d "%RUNNER_TEMP%\tinycc\win32"
+          call build-tcc.bat -c cl -t x86_64 -i C:\tcc
+          if errorlevel 1 exit /b 1
+          C:\tcc\tcc.exe -v
+
+      - name: Build zlib 1.3.1 for Tiny C Compiler
+        shell: cmd
+        run: |
+          curl -fsSL -o "%RUNNER_TEMP%\zlib.tgz" https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz
+          if errorlevel 1 exit /b 1
+          tar -xf "%RUNNER_TEMP%\zlib.tgz" -C "%RUNNER_TEMP%"
+          if errorlevel 1 exit /b 1
+          cd /d "%RUNNER_TEMP%\zlib-1.3.1"
+          for %%f in (adler32.c crc32.c deflate.c infback.c inffast.c inflate.c inftrees.c trees.c zutil.c compress.c uncompr.c gzclose.c gzlib.c gzread.c gzwrite.c) do C:\tcc\tcc.exe -c -O2 %%f || exit /b 1
+          C:\tcc\tcc.exe -ar rcs C:\tcc\lib\libz.a adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
+          if errorlevel 1 exit /b 1
+          copy /y zlib.h C:\tcc\include\zlib.h
+          if errorlevel 1 exit /b 1
+          copy /y zconf.h C:\tcc\include\zconf.h
+          if errorlevel 1 exit /b 1
+
+      - name: Build and test Recto
+        shell: cmd
+        run: |
+          set "PATH=C:\tcc;%PATH%"
+          call build.bat
+          if errorlevel 1 exit /b 1
+          recto.exe version
+          recto.exe test
+          if errorlevel 1 exit /b 1
+
+      - name: Upload the Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: recto-windows-x86_64
+          path: recto.exe
+          if-no-files-found: error
