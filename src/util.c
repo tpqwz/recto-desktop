@@ -11,7 +11,6 @@
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
-#include <sys/stat.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #define recto_access _access
@@ -239,9 +238,10 @@ int file_exists(const char *path) {
 
 int file_is_dir(const char *path) {
 #ifdef _WIN32
-    struct _stat st;
-    if (_stat(path, &st) != 0) return 0;
-    return (st.st_mode & _S_IFDIR) != 0;
+    DWORD attr;
+    if (!path || !path[0]) return 0;
+    attr = GetFileAttributesA(path);
+    return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #else
     struct stat st;
     if (stat(path, &st) != 0) return 0;
@@ -273,6 +273,14 @@ int dir_make_p(const char *path) {
     for (i = 1; i < n; i++) {
         if (tmp[i] == '/' || tmp[i] == '\\') {
             tmp[i] = 0;
+#ifdef _WIN32
+            /* "C:" names the current directory on that drive, not a folder to create. */
+            if (tmp[1] == ':' && tmp[2] == 0 &&
+                ((tmp[0] >= 'A' && tmp[0] <= 'Z') || (tmp[0] >= 'a' && tmp[0] <= 'z'))) {
+                tmp[i] = PATH_SEP;
+                continue;
+            }
+#endif
             if (tmp[0] && dir_make(tmp) != 0) return -1;
             tmp[i] = PATH_SEP;
         }
