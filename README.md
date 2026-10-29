@@ -1,5 +1,7 @@
 # Recto
 
+Early alpha `0.1.0-alpha.1`. Versions look like `0.MINOR.PATCH-alpha.N`: the leading `0` stays through alpha, and `alpha.N` counts each early cut. The string lives in `src/recto.h`. `recto version` prints it.
+
 Recto converts PDF, DjVu, HTML, plain text, Markdown, and page images to EPUB. Printed page numbers and the contents are kept. A reading edition can be checked afterwards (contents, page Go, find) in the terminal or in a browser window. It is in the spirit of [rect.grok.me](https://rect.grok.me).
 
 The program is C99 and builds with Tiny C Compiler. With no arguments it prints help. `recto FILE` writes an EPUB beside the file. `recto gui` opens the shelf in a browser window, using [WebUI](https://github.com/webui-dev/webui) 2.5.0-beta.4 (MIT, sources in `third_party/webui`). Tiny C Compiler builds that C core on Linux and links it with pthread, libm, and libdl. The Windows WebView in WebUI is C++, so `build.bat` stays a line-mode build and `recto gui` explains that.

@@ -185,6 +185,7 @@ int recto_selftest(void) {
     checks = 0;
     fails = 0;
     recto_err[0] = 0;
+    ok(RECTO_VERSION[0] == '0' && strstr(RECTO_VERSION, "-alpha.") != NULL, "early alpha version");
 
     ok(roman_parse("xiv") == 14, "xiv is 14");
     ok(roman_parse("IV") == 4, "IV is 4");

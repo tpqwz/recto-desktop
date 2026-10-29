@@ -5,7 +5,7 @@
 #include <string.h>
 
 static void help(void) {
-    printf("Recto converts PDF, DjVu, HTML, plain text, Markdown, and page images to EPUB.\n"
+    printf("Recto %s converts PDF, DjVu, HTML, plain text, Markdown, and page images to EPUB.\n"
            "Printed page numbers and the contents are kept.\n"
            "\n"
            "  recto convert INPUT... OUTPUT.epub|FOLDER\n"
@@ -23,16 +23,19 @@ static void help(void) {
            "  recto sample                  put the sample editions back\n"
            "  recto settings [key=value]    show or change settings\n"
            "  recto library                 show the catalogue\n"
+           "  recto version                 print the version\n"
            "  recto test                    run the self-test\n"
            "\n"
            "One .epub file is one book. A folder receives one EPUB per book.\n"
            "With no output path, the EPUB is written beside the source.\n"
            "A folder of pictures is one book. Several PDF or DjVu files are several books.\n"
-           "The shelf is $RECTO_SHELF, or ~/.recto.\n");
+           "The shelf is $RECTO_SHELF, or ~/.recto.\n",
+           RECTO_VERSION);
 }
 
 static int known_command(const char *s) {
-    return strcmp(s, "help") == 0 || strcmp(s, "--help") == 0 || strcmp(s, "-h") == 0 || strcmp(s, "test") == 0 ||
+    return strcmp(s, "help") == 0 || strcmp(s, "--help") == 0 || strcmp(s, "-h") == 0 || strcmp(s, "version") == 0 ||
+           strcmp(s, "--version") == 0 || strcmp(s, "-V") == 0 || strcmp(s, "test") == 0 ||
            strcmp(s, "gui") == 0 || strcmp(s, "desk") == 0 || strcmp(s, "convert") == 0 || strcmp(s, "open") == 0 ||
            strcmp(s, "books") == 0 || strcmp(s, "show") == 0 || strcmp(s, "page") == 0 || strcmp(s, "find") == 0 ||
            strcmp(s, "export") == 0 || strcmp(s, "ocr") == 0 || strcmp(s, "remove") == 0 || strcmp(s, "sample") == 0 ||
@@ -249,6 +252,10 @@ int main(int argc, char **argv) {
     int rc = 0;
     if (argc < 2 || strcmp(argv[1], "help") == 0 || strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
         help();
+        return 0;
+    }
+    if (strcmp(argv[1], "version") == 0 || strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-V") == 0) {
+        printf("%s\n", RECTO_VERSION);
         return 0;
     }
     if (strcmp(argv[1], "test") == 0) return recto_selftest() == 0 ? 0 : 1;

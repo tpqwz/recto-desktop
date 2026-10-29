@@ -508,7 +508,11 @@ static void draw(Desk *d) {
     if (body < 1) body = 1;
     fputs("\033[H\033[2J", stdout);
     if (d->mode == M_SHELF) {
-        draw_line(1, 1, "Recto: convert to EPUB");
+        {
+            char title[80];
+            snprintf(title, sizeof title, "Recto %s", RECTO_VERSION);
+            draw_line(1, 1, title);
+        }
         if (d->shelf->nsum == 0) draw_line(3, 3, "No conversions yet. Press o to add a file.");
         if (d->sel >= d->shelf->nsum) d->sel = d->shelf->nsum ? d->shelf->nsum - 1 : 0;
         if (d->sel < 0) d->sel = 0;
@@ -835,7 +839,7 @@ int desk_run(Shelf *shelf) {
     }
     for (;;) {
         int i;
-        printf("\nRecto: convert to EPUB (%d)\n", shelf->nsum);
+        printf("\nRecto %s (%d)\n", RECTO_VERSION, shelf->nsum);
         for (i = 0; i < shelf->nsum; i++)
             printf("  %d  %s\n", i + 1, shelf->sum[i].title[0] ? shelf->sum[i].title : shelf->sum[i].id);
         printf("open N, o PATH, del ID, sample, set key=value, q\n> ");

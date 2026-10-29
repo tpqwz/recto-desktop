@@ -38,7 +38,7 @@ static Shelf *gui_shelf;
 static const char GUI_HTML[] =
     "<!DOCTYPE html><html><head><meta charset='utf-8'>"
     "<meta name='viewport' content='width=device-width, initial-scale=1'>"
-    "<title>Recto</title><script src='webui.js'></script><style>"
+    "<title>Recto " RECTO_VERSION "</title><script src='webui.js'></script><style>"
     ":root { --bg:#e6dfd2; --paper:#fbf7f0; --ink:#221e1a; --muted:#6f675e; --line:#d4cdc1; --seal:#7d2e28; --shelf:#efe8dc; }"
     "* { box-sizing:border-box; } html, body { height:100%; margin:0; }"
     "body { font-family:'Segoe UI', system-ui, sans-serif; color:var(--ink); background:var(--bg);"
@@ -82,7 +82,7 @@ static const char GUI_HTML[] =
     ".note-set { max-width:36rem; color:var(--muted); } [hidden] { display:none !important; }"
     "@media (max-width:860px) { .desk { grid-template-columns:1fr; } aside { max-height:240px; border:0; border-bottom:1px solid var(--line); } }"
     "</style></head><body>"
-    "<header><div class='brand'>Recto</div><span class='sub'>to EPUB</span>"
+    "<header><div class='brand'>Recto</div><span class='sub'>to EPUB " RECTO_VERSION "</span>"
     "<form id='convert-form' class='convert'><button id='btn-open' type='button'>Open</button>"
     "<input id='convert-src' placeholder='Files, or a folder of pages'>"
     "<input id='convert-out' placeholder='out.epub or a folder'><button>Convert</button></form>"

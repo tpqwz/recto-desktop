@@ -10,6 +10,10 @@
 #define RECTO_PATH 768
 #define RECTO_ERR 2048
 
+/* Early alpha: 0.MINOR.PATCH-alpha.N. The leading 0 stays through alpha.
+   alpha.N counts each early cut. 0.1.0-alpha.1 is the first cut. */
+#define RECTO_VERSION "0.1.0-alpha.1"
+
 enum {
     PIC_UNREAD = 0,
     PIC_EMPTY = 1,
